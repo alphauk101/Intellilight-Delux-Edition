@@ -4,6 +4,8 @@
 
 #define DEBUG
 
+#define MAIN_DELAY          250
+
 #define LONG_PRESS_COUNT    100 //how long we wait before considering a long press 100 = 5seconds (ish)
 
 #define DAY_LED_BRIGHTNESS      35  //This is the brightness level set to ALL leds when in day mode
@@ -44,11 +46,17 @@ typedef uint8_t LIGHT_PHASE;
 #define LONG  2
 #define NONE  3
 
+typedef struct {
+  LIGHT_PHASE   current; /*current phase*/
+
+  uint16_t      day_minute;/*to show sun movement convert the current day into a minutes*/
+} TIME_PHASE;
+
 //Our application data structure
 typedef struct {
   DateTime        current_time; //Current time
 
-  LIGHT_PHASE     light_phase; //current light phase
+  TIME_PHASE      time_phase; //current light phase
 
   BUTTON_PRESS    button_press; //Last state of button
 } INTELLI_DATA;

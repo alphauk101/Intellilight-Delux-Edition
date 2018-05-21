@@ -36,21 +36,21 @@ void light_control::set_light_phase(INTELLI_DATA * light_data_ptr)
   bool trans = false;
   //First thing we do is check whether we are changing phase
 
-  if (light_data_ptr->light_phase != this->_last_phase)
+  if (light_data_ptr->time_phase.current != this->_last_phase)
   {
     //Its time to transpose the lighting
     fade_current_lights();
     //Now we need to go to whichever lighting is next
     trans = true; // we do a transistion
     //Lastly update of current light state
-    this->_last_phase = light_data_ptr->light_phase;
+    this->_last_phase = light_data_ptr->time_phase.current;
   } else {
     trans = false;
   }
 
   //now set the appropriate mode
 
-  switch (light_data_ptr->light_phase)
+  switch (light_data_ptr->time_phase.current)
   {
     case HOUR_DAY_PHASE:
       this->set_day_mode(trans);
