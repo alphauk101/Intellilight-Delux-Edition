@@ -8,7 +8,7 @@
 #include "light_ctrl.h"
 
 
-#define SET_CLOCK /*sets the current time in the clock on startup (shouldnt be used in final)*/
+//#define SET_CLOCK /*sets the current time in the clock on startup (shouldnt be used in final)*/
 
 /*Realt Time Clock*/
 RTC_DS1307 rtc;
@@ -23,6 +23,8 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Intellight Delux - debugging enabled");
 #endif
+
+  setup_rtc();//Important: setup the rtc comms
 
   //Make sure our lighting is up and running before doing anything else
   light_ctrl.init();
@@ -47,7 +49,8 @@ static void get_day_phase()
 {
   //We will simplily use hours at the moment to change phase
   //We olny want to action the change at the start of the hour, we do this to solve one simple issue
-  //Pressing the button effectively cancels the current phase - we dont want the phase to then in turn be cancelled by this
+  //Pressing the button effectively cancels the current phase - we dont want the phase to then in turn be cancelled by this.
+
   if (intel_data.current_time.minute() == 0) {
     switch (intel_data.current_time.hour())
     {
@@ -79,7 +82,7 @@ static void get_day_phase()
   }
 
 #ifdef DEBUG
-  DateTime now = intel_data.current_time;
+  DateTime now = rtc.now();
   Serial.print(now.year(), DEC);
   Serial.print('/');
   Serial.print(now.month(), DEC);
@@ -92,14 +95,27 @@ static void get_day_phase()
   Serial.print(':');
   Serial.print(now.minute(), DEC);
   Serial.print(':');
-  Serial.print(now.second(), HEX);
+  Serial.println(now.second(), HEX);
+  Serial.println("------------");
+
+  switch (intel_data.time_phase.current)
+  {
+    case HOUR_DAY_PHASE:
+      Serial.print("Day phase, minutes: ");
+      Serial.println(intel_data.time_phase.day_minute, HEX);
+      break;
+    case HOUR_EVE_PHASE:
+      Serial.print("Evening phase");
+      break;
+    case HOUR_NIGHT_PHASE:
+      Serial.print("Night phase");
+      break;
+    case HOUR_OFF_PHASE:
+      Serial.print("Off phase");
+      break;
+  }
   Serial.println();
 
-  if (intel_data.time_phase.current == HOUR_DAY_PHASE)
-  {
-    Serial.print("Day minutes: ");
-    Serial.println(intel_data.time_phase.day_minute, HEX);
-  }
 #endif
 }
 
