@@ -8,7 +8,7 @@
 #include "light_ctrl.h"
 
 
-//#define SET_CLOCK /*sets the current time in the clock on startup (shouldnt be used in final)*/
+#define SET_CLOCK /*sets the current time in the clock on startup (shouldnt be used in final)*/
 
 /*Realt Time Clock*/
 RTC_DS1307 rtc;
@@ -127,7 +127,8 @@ static void setup_rtc()
 
 #ifdef SET_CLOCK
   //when in test mode actaul set the real time and date
-  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  rtc.adjust(DateTime(2000, 1, 1, 8, 55, 0));
 #endif
 
   if (! rtc.isrunning())
