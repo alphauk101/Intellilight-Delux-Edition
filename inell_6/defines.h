@@ -34,10 +34,10 @@
 
 #define TRANS_SPEED_MS      50 //Time of steps during transistion
 
-#define HOUR_DAY_PHASE    9/*This inidicates that the day phase starts at 9am*/
-#define HOUR_EVE_PHASE    18/*eve pahase starts at 6pm*/
-#define HOUR_NIGHT_PHASE  20 /*Night 8pm*/
-#define HOUR_OFF_PHASE    0/*Off at midnight*/
+#define DAY    9/*This inidicates that the day phase starts at 9am*/
+#define EVE    18/*eve pahase starts at 6pm*/
+#define NIGHT  20 /*Night 8pm*/
+#define OFF    23/*Off at midnight*/
 
 typedef uint8_t BUTTON_PRESS;
 typedef uint8_t LIGHT_PHASE;
@@ -49,7 +49,7 @@ typedef uint8_t LIGHT_PHASE;
 typedef struct {
   LIGHT_PHASE   current; /*current phase*/
 
-  uint16_t      day_minute;/*to show sun movement convert the current day into a minutes*/
+  uint16_t      elapsed; /*the amount of minutes elapsed in to the new phase this is used for effects*/
 } TIME_PHASE;
 
 //Our application data structure

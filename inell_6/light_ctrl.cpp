@@ -26,7 +26,7 @@ void light_control::init()
   rainbowCycle(5);
   colorWipe(strip.Color(0, 0, 0), 20); // Off
 
-  _last_phase = HOUR_OFF_PHASE;//They are off
+  _last_phase = OFF;//They are off
   //Set this to the standard effect on boot
   eve_effect = STANDARD;
 }
@@ -52,16 +52,16 @@ void light_control::set_light_phase(INTELLI_DATA * light_data_ptr)
 
   switch (light_data_ptr->time_phase.current)
   {
-    case HOUR_DAY_PHASE:
+    case DAY:
       this->set_day_mode(trans);
       break;
-    case HOUR_EVE_PHASE:
+    case EVE:
       this->set_eve_mode(trans);
       break;
-    case HOUR_NIGHT_PHASE:
+    case NIGHT:
       this->set_night_mode(trans);
       break;
-    case HOUR_OFF_PHASE:
+    case OFF:
       this->set_off_mode(trans);
       break;
     default:
