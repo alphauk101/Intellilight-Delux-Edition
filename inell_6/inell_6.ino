@@ -36,6 +36,8 @@ void loop() {
   /*update the data pointer object*/
   time_ctl.get_time_update(&intel_data);
 
+  /*update the lighting*/
+  light_ctrl.set_light_phase(&intel_data);
 
   delay(MAIN_DELAY);
 }

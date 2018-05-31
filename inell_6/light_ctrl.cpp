@@ -27,6 +27,7 @@ void light_control::init()
   colorWipe(strip.Color(0, 0, 0), 20); // Off
 
   _last_phase = OFF;//They are off
+  
   //Set this to the standard effect on boot
   eve_effect = STANDARD;
 }

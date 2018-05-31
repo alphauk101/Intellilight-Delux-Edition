@@ -4,7 +4,7 @@
 
 #define DEBUG
 
-#define MAIN_DELAY          250
+#define MAIN_DELAY          500
 
 #define LONG_PRESS_COUNT    100 //how long we wait before considering a long press 100 = 5seconds (ish)
 
