@@ -27,12 +27,14 @@ void light_control::init()
   colorWipe(strip.Color(0, 0, 0), 20); // Off
 
   _last_phase = OFF;//They are off
-  
+
   //Set this to the standard effect on boot
   eve_effect = STANDARD;
+
+  min_count = 0;
 }
 
-void light_control::set_light_phase(INTELLI_DATA * light_data_ptr)
+void light_control::set_light_phase(INTELLI_DATA *light_data_ptr)
 {
   bool trans = false;
   //First thing we do is check whether we are changing phase
@@ -54,18 +56,22 @@ void light_control::set_light_phase(INTELLI_DATA * light_data_ptr)
   switch (light_data_ptr->time_phase.current)
   {
     case DAY:
-      this->set_day_mode(trans);
+      this->set_day_mode(trans,light_data_ptr);
       break;
     case EVE:
       this->set_eve_mode(trans);
+      min_count = 0;
       break;
     case NIGHT:
       this->set_night_mode(trans);
+      min_count = 0;
       break;
     case OFF:
       this->set_off_mode(trans);
+      min_count = 0;
       break;
     default:
+      min_count = 0;
       break;
   }
 }
@@ -102,9 +108,27 @@ void light_control::set_night_step(uint8_t brightness)
 
 /*set day mode
   pass true to the function causes a transistion**/
-void light_control::set_day_mode(bool trans)
+
+void light_control::set_day_mode(bool trans, INTELLI_DATA *light_data_ptr)
 {
+#ifdef NEW_CODE
+  /*In day mode we have a low white led and a yellow led which changes throughout the day*/
+
+  /*first set all the LEDs*/
   this->set_rgb_level(DAY_LED_BRIGHTNESS, trans);
+
+  /*now using the minutes workout which led is yellow*/
+  //DAY_MIN_DIVIDE
+
+  /*now work out the day minutes*/
+  if((light_data_ptr->time_phase.elapsed % 9)==0) min_count++;
+
+  strip.setPixelColor(min_count, SUN_LED);
+  strip.show();
+
+#else
+  this->set_rgb_level(DAY_LED_BRIGHTNESS, trans);
+#endif
 }
 
 /*set eve mode*/
@@ -167,7 +191,8 @@ void light_control::set_effect(EVE_EFFECT old_effect, EVE_EFFECT new_effect)
       break;
   }
 
-  if (new_effect != old_effect) {
+  if (new_effect != old_effect)
+  {
     bool looped = true;
     uint32_t update_color = 0;
     while (looped) {
@@ -244,25 +269,25 @@ bool light_control::update_pixel_transistion(LED_MATRIX new_c, uint16_t pix)
   apply_pixel.red = this->compare_pix_ammend(old_pixel.red, new_c.red);
   apply_pixel.green = this->compare_pix_ammend(old_pixel.green, new_c.green);
   apply_pixel.blue = this->compare_pix_ammend(old_pixel.blue, new_c.blue);
-/*
-  Serial.print("Old Red: ");
-  Serial.println(old_pixel.red);
-  Serial.print("New Red: ");
-  Serial.println(new_c.red);
-  Serial.print("Trans red: ");
-  Serial.println(apply_pixel.red);
-  Serial.println("---------------------------------------");
+  /*
+    Serial.print("Old Red: ");
+    Serial.println(old_pixel.red);
+    Serial.print("New Red: ");
+    Serial.println(new_c.red);
+    Serial.print("Trans red: ");
+    Serial.println(apply_pixel.red);
+    Serial.println("---------------------------------------");
 
-  Serial.print("P: ");
-  Serial.println(pix);
-  Serial.print("Old Blue: ");
-  Serial.println(old_pixel.blue);
-  Serial.print("New Blue: ");
-  Serial.println(new_c.blue);
-  Serial.print("Trans Blue: ");
-  Serial.println(apply_pixel.blue);
-  Serial.println("---------------------------------------");
-*/
+    Serial.print("P: ");
+    Serial.println(pix);
+    Serial.print("Old Blue: ");
+    Serial.println(old_pixel.blue);
+    Serial.print("New Blue: ");
+    Serial.println(new_c.blue);
+    Serial.print("Trans Blue: ");
+    Serial.println(apply_pixel.blue);
+    Serial.println("---------------------------------------");
+  */
 
   for (int a = 0; a < NUMPIXELS; a++)
   {
@@ -323,10 +348,10 @@ uint8_t light_control::compare_pix_ammend(uint8_t old_col, uint8_t new_col)
 {
   uint8_t apply = old_col;
   if (old_col > new_col) {
-    apply = (old_col-1);
+    apply = (old_col - 1);
     //new_col++;
   } else if (old_col < new_col) {
-    apply = (old_col+1);
+    apply = (old_col + 1);
     //new_col--;
   } else {
     //value stay the same
@@ -358,11 +383,11 @@ void light_control::apply_matrix()
   uint8_t row = 0;
   for (uint16_t i = 0; i < strip.numPixels(); i++) {
     /*
-    strip.setPixelColor(i, strip.Color(g_led_matrix[row].red , 0, 0));
-    i++;
-    strip.setPixelColor(i, strip.Color(0, g_led_matrix[row].green, 0));
-    i++;
-    strip.setPixelColor(i, strip.Color(0, 0, g_led_matrix[row].blue));
+      strip.setPixelColor(i, strip.Color(g_led_matrix[row].red , 0, 0));
+      i++;
+      strip.setPixelColor(i, strip.Color(0, g_led_matrix[row].green, 0));
+      i++;
+      strip.setPixelColor(i, strip.Color(0, 0, g_led_matrix[row].blue));
     */
     strip.setPixelColor(i, strip.Color(g_led_matrix[row].red , g_led_matrix[row].green, g_led_matrix[row].blue));
     if ((i != 0) && ((i % 10) == 0))row++;
@@ -472,8 +497,8 @@ void light_control::effect_shift_timer()
 {
   eve_effect = random(0, 4);
   /*
-  eve_effect++;
-  if (eve_effect > GREEN) eve_effect = STANDARD;
+    eve_effect++;
+    if (eve_effect > GREEN) eve_effect = STANDARD;
   */
 }
 
