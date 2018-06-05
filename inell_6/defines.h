@@ -14,7 +14,7 @@
 #define OFF_LED_BRIGHTNESS      0   //off mode 
 
 #define RGB_LED_INTENSITY       250 //Individual led intensity (not brightness) during none night modes
-#define MAX_LED_INTENSITY       255
+#define MAX_LED_INTENSITY       250
 #define LOW_LED_INTENSITY       30
 #define NIGHT_BLUE_INTENSITY    250
 #define NIGHT_WHITE_INTENSITY   60  // The red and green led intens during night 

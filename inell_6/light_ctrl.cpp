@@ -38,7 +38,7 @@ void light_control::set_light_phase(INTELLI_DATA *light_data_ptr)
 {
   bool trans = false;
   //First thing we do is check whether we are changing phase
-
+#ifdef OLD
   if (light_data_ptr->time_phase.current != this->_last_phase)
   {
     //Its time to transpose the lighting
@@ -50,7 +50,7 @@ void light_control::set_light_phase(INTELLI_DATA *light_data_ptr)
   } else {
     trans = false;
   }
-
+#endif
   //now set the appropriate mode
 
   switch (light_data_ptr->time_phase.current)
@@ -79,6 +79,7 @@ void light_control::set_light_phase(INTELLI_DATA *light_data_ptr)
 void light_control::set_night_mode(bool trans) {
   //If we are trans'ing then we need to fade up to out night mode problem is our rg lights are duller than the b lights
   //For now (and this will change) we will fade them up indepedantly
+#ifdef OLD
   if (trans) { //were transitioning
     for (int i = 0 ; i < NIGHT_LED_BRIGHTNESS; i++) {
       /*For each step of b led we are increasing the brightness*/
@@ -89,6 +90,8 @@ void light_control::set_night_mode(bool trans) {
     //Were not transitioning so just set lights to full brightness
     this->set_night_step(NIGHT_LED_BRIGHTNESS);
   }
+#endif
+  this->set_night_step(NIGHT_LED_BRIGHTNESS);
 }
 
 /*Allows all leds to be set in night mode at the given brightness*/
@@ -183,6 +186,7 @@ void light_control::set_day_sky(uint16_t sun_idx)
 EVE_EFFECT prev_effect;
 void light_control::set_eve_mode(bool trans)
 {
+#ifdef OLD
   if (trans) {
     //If we are transisting modes then we should do it
     this->set_rgb_level(EVE_LED_BRIGHTNESS, trans);
@@ -198,6 +202,21 @@ void light_control::set_eve_mode(bool trans)
 
     //this->set_red_tint();
   }
+#endif
+  strip.clear();
+  strip.setBrightness(255);
+
+  for (uint16_t a = 0 ; a < strip.numPixels(); a++)
+  {
+    if ((a % 3) == 0) {
+      strip.setPixelColor(a, strip.Color(0, 0, MAX_LED_INTENSITY));
+    } else {
+      strip.setPixelColor(a, strip.Color(MAX_LED_INTENSITY, MAX_LED_INTENSITY, MAX_LED_INTENSITY));
+    }
+  }
+  strip.show();
+
+
 }
 
 void light_control::set_effect(EVE_EFFECT old_effect, EVE_EFFECT new_effect)

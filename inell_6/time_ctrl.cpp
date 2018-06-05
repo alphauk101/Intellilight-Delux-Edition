@@ -10,7 +10,7 @@ bool time_ctrl::time_init()
 #ifdef SET_CLOCK
   //when in test mode actaul set the real time and date
   //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  rtc.adjust(DateTime(2000, 1, 1, 8, 58, 0));
+  rtc.adjust(DateTime(2000, 1, 1, 8, 59, 0));
 #endif
 
   return rtc.isrunning();

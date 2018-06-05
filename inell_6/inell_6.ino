@@ -1,8 +1,7 @@
 /*****************
    Intelli light delux
-   The fish tank light returns this time hes angry!
+   The fish tank light returns, this time hes angry!
  *****************/
-
 #include "defines.h"
 #include "light_ctrl.h"
 #include "time_ctrl.h"
