@@ -56,7 +56,7 @@ void light_control::set_light_phase(INTELLI_DATA *light_data_ptr)
   switch (light_data_ptr->time_phase.current)
   {
     case DAY:
-      this->set_day_mode(trans,light_data_ptr);
+      this->set_day_mode(trans, light_data_ptr);
       break;
     case EVE:
       this->set_eve_mode(trans);
@@ -108,27 +108,75 @@ void light_control::set_night_step(uint8_t brightness)
 
 /*set day mode
   pass true to the function causes a transistion**/
-
+uint16_t last_change;
 void light_control::set_day_mode(bool trans, INTELLI_DATA *light_data_ptr)
 {
-#ifdef NEW_CODE
-  /*In day mode we have a low white led and a yellow led which changes throughout the day*/
 
-  /*first set all the LEDs*/
-  this->set_rgb_level(DAY_LED_BRIGHTNESS, trans);
+  /*In day mode we have a low white led and a yellow led which changes throughout the day*/
 
   /*now using the minutes workout which led is yellow*/
   //DAY_MIN_DIVIDE
 
   /*now work out the day minutes*/
-  if((light_data_ptr->time_phase.elapsed % 9)==0) min_count++;
+  if ( ((light_data_ptr->time_phase.elapsed % DAY_MIN_DIVIDE) == 0) &&
+       (light_data_ptr->time_phase.elapsed != last_change) )
+  {
+    min_count++;
+    last_change = light_data_ptr->time_phase.elapsed;
+  }
 
-  strip.setPixelColor(min_count, SUN_LED);
+  //Serial.print("Sun index: ");
+  //Serial.println(min_count, DEC);
+  /*first set all the LEDs*/
+  this->set_day_sky(min_count);
+
+
+
+}
+
+void light_control::set_day_sky(uint16_t sun_idx)
+{
+  strip.clear();
+  strip.setBrightness(255);
+  for (uint16_t a = 0 ; a < strip.numPixels(); a++)
+  {
+    //Serial.print(sun_idx,DEC);
+    if (a != sun_idx)
+    {
+
+      if ((a % 2) == 0) {
+        strip.setPixelColor(a, strip.Color(DAY_LED_BRIGHTNESS, DAY_LED_BRIGHTNESS, DAY_LED_BRIGHTNESS));
+        /*
+          g_led_matrix[a].red = MAX_LED_INTENSITY;
+          g_led_matrix[a].green = MAX_LED_INTENSITY;
+          g_led_matrix[a].blue = MAX_LED_INTENSITY;
+        */
+      } else {
+        strip.setPixelColor(a, strip.Color(0, 0, DAY_LED_BRIGHTNESS));
+        /*
+          g_led_matrix[a].red = (MAX_LED_INTENSITY / 2);
+          g_led_matrix[a].green = MAX_LED_INTENSITY;
+          g_led_matrix[a].blue = (MAX_LED_INTENSITY / 2);
+        */
+        /*
+          g_led_matrix[a].red = MAX_LED_INTENSITY;
+          g_led_matrix[a].green = MAX_LED_INTENSITY;
+          g_led_matrix[a].blue = MAX_LED_INTENSITY;
+        */
+      }
+
+    }
+    else
+    {
+      strip.setPixelColor(a, strip.Color(RGB_LED_INTENSITY, RGB_LED_INTENSITY, 50));
+    }
+  }
+  //this->apply_matrix();
+  //DAY_LED_BRIGHTNESS
+  //Serial.println("update strip");
+  //strip.setBrightness(DAY_LED_BRIGHTNESS);
   strip.show();
-
-#else
-  this->set_rgb_level(DAY_LED_BRIGHTNESS, trans);
-#endif
+  //delay(500);
 }
 
 /*set eve mode*/
@@ -416,7 +464,9 @@ void light_control::set_rgb_level(uint8_t level, bool trans)
   } else {
     b = level;
   }
-  for (b; b <= level; b++) {
+
+  for (b; b <= level; b++)
+  {
     apply_matrix();
     strip.setBrightness(b);
     strip.show();

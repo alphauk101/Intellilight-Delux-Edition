@@ -16,7 +16,7 @@ typedef byte EVE_EFFECT;
 #define ROSE      1
 #define SKY       2
 #define GREEN     3
-#define SUN_LED   strip.Color(255, 0, 0) /*the sun led*/
+#define SUN_LED   strip.Color(255, 255, 0) /*the sun led*/
 static EVE_EFFECT eve_effect;
 
 #define LED_DATA_PIN      5
@@ -26,12 +26,12 @@ static EVE_EFFECT eve_effect;
 
 #define ERROR_RTC_FAIL    0xE1
 
-typedef struct{
+typedef struct {
   uint8_t red;
   uint8_t green;
   uint8_t blue;
-  
-}LED_MATRIX;
+
+} LED_MATRIX;
 
 class light_control
 {
@@ -49,17 +49,17 @@ class light_control
     void rainbowCycle(uint8_t);
     uint32_t Wheel(byte);
     void colorWipe(uint32_t , uint8_t);
-    void set_day_mode(bool ,INTELLI_DATA *);
+    void set_day_mode(bool , INTELLI_DATA *);
     void set_eve_mode(bool);
     void set_off_mode(bool);
     void set_rgb_level(uint8_t , bool );
     void set_night_step(uint8_t);
     void set_red_tint(void);
     void set_effect(EVE_EFFECT, EVE_EFFECT);
-    bool update_pixel_transistion(LED_MATRIX new_c,uint16_t pix);
+    bool update_pixel_transistion(LED_MATRIX new_c, uint16_t pix);
     uint8_t compare_pix_ammend(uint8_t old_col, uint8_t new_col);
     void apply_matrix(void);
-
+    void set_day_sky(uint16_t);
 };
 
 

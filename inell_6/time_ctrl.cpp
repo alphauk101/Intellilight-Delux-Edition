@@ -1,6 +1,6 @@
 #include "time_ctrl.h"
 
-//#define SET_CLOCK /*sets the current time in the clock on startup (shouldnt be used in final)*/
+#define SET_CLOCK /*sets the current time in the clock on startup (shouldnt be used in final)*/
 
 bool time_ctrl::time_init()
 {
@@ -10,7 +10,7 @@ bool time_ctrl::time_init()
 #ifdef SET_CLOCK
   //when in test mode actaul set the real time and date
   //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  rtc.adjust(DateTime(2000, 1, 1, 11, 55, 0));
+  rtc.adjust(DateTime(2000, 1, 1, 8, 58, 0));
 #endif
 
   return rtc.isrunning();
