@@ -98,11 +98,13 @@ void light_control::set_night_mode(bool trans) {
 void light_control::set_night_step(uint8_t brightness)
 {
   for (uint8_t j = 0; j < strip.numPixels(); j++) {
-    strip.setPixelColor(j, strip.Color(NIGHT_WHITE_INTENSITY, NIGHT_WHITE_INTENSITY, NIGHT_WHITE_INTENSITY));
-    j++;
-    strip.setPixelColor(j, strip.Color(0, 0, NIGHT_BLUE_INTENSITY));
-    j++;
-    strip.setPixelColor(j, strip.Color(0, 0, NIGHT_BLUE_INTENSITY));
+
+    if ((j % 5) == 0) {
+      strip.setPixelColor(j, strip.Color(NIGHT_WHITE_INTENSITY, NIGHT_WHITE_INTENSITY, NIGHT_WHITE_INTENSITY));
+    } else {
+      strip.setPixelColor(j, strip.Color(0, 0, NIGHT_BLUE_INTENSITY));
+    }
+
   }
   //Once all the leds have been stored we can update the display
   strip.setBrightness(brightness);
