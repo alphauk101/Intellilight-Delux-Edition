@@ -74,7 +74,7 @@ void light_control::set_light_phase(INTELLI_DATA *light_data_ptr)
   }
 }
 
-void light_control::set_night_mode(bool trans) 
+void light_control::set_night_mode(bool trans)
 {
   //If we are trans'ing then we need to fade up to out night mode problem is our rg lights are duller than the b lights
   //For now (and this will change) we will fade them up indepedantly
@@ -82,242 +82,258 @@ void light_control::set_night_mode(bool trans)
   if (trans) { //were transitioning
     this->trans_eve_night();
   }
+  //Once all the leds have been stored we can update the display
+  strip.setBrightness(255);
+  for (uint8_t j = 0; j < strip.numPixels(); j++) {
 
+    if ((j % 5) == 0) {
+      strip.setPixelColor(j, strip.Color(NIGHT_WHITE_BRIGHTNESS, NIGHT_WHITE_BRIGHTNESS, NIGHT_WHITE_BRIGHTNESS));
+    } else {
+      strip.setPixelColor(j, strip.Color(0, 0, NIGHT_LED_BRIGHTNESS));
+    }
 
-  /*Allows all leds to be set in night mode at the given brightness*/
-  void light_control::set_night_step(uint8_t brightness)
+  }
+
+  strip.show();
+}
+
+/*set day mode
+  pass true to the function causes a transistion**/
+uint16_t last_change;
+void light_control::set_day_mode(bool trans, INTELLI_DATA * light_data_ptr)
+{
+
+  /*In day mode we have a low white led and a yellow led which changes throughout the day*/
+
+  /*now using the minutes workout which led is yellow*/
+  //DAY_MIN_DIVIDE
+
+  if (trans)
   {
-    for (uint8_t j = 0; j < strip.numPixels(); j++) {
-
-      if ((j % 5) == 0) {
-        strip.setPixelColor(j, strip.Color(NIGHT_WHITE_INTENSITY, NIGHT_WHITE_INTENSITY, NIGHT_WHITE_INTENSITY));
-      } else {
-        strip.setPixelColor(j, strip.Color(0, 0, NIGHT_BLUE_INTENSITY));
-      }
-
-    }
-    //Once all the leds have been stored we can update the display
-    strip.setBrightness(brightness);
-    strip.show();
+    /*This is where we do the transistion to make the thing less jerky when changing
+      we know in this state that the transistion will be off -> day so*/
+    this->trans_off_day();
   }
 
-  /*set day mode
-    pass true to the function causes a transistion**/
-  uint16_t last_change;
-  void light_control::set_day_mode(bool trans, INTELLI_DATA * light_data_ptr)
+
+
+  /*now work out the day minutes*/
+  if ( ((light_data_ptr->time_phase.elapsed % DAY_MIN_DIVIDE) == 0) &&
+       (light_data_ptr->time_phase.elapsed != last_change) )
   {
-
-    /*In day mode we have a low white led and a yellow led which changes throughout the day*/
-
-    /*now using the minutes workout which led is yellow*/
-    //DAY_MIN_DIVIDE
-
-    if (trans)
-    {
-      /*This is where we do the transistion to make the thing less jerky when changing
-        we know in this state that the transistion will be off -> day so*/
-      this->trans_off_day();
-    }
-
-
-
-    /*now work out the day minutes*/
-    if ( ((light_data_ptr->time_phase.elapsed % DAY_MIN_DIVIDE) == 0) &&
-         (light_data_ptr->time_phase.elapsed != last_change) )
-    {
-      min_count++;
-      last_change = light_data_ptr->time_phase.elapsed;
-    }
-
-    //Serial.print("Sun index: ");
-    //Serial.println(min_count, DEC);
-    /*first set all the LEDs*/
-    this->set_day_sky(min_count);
+    min_count++;
+    last_change = light_data_ptr->time_phase.elapsed;
   }
 
-  /*From eve to night*/
-  void light_control::trans_eve_night() {
-    strip.clear();
-    strip.setBrightness(255);
+  //Serial.print("Sun index: ");
+  //Serial.println(min_count, DEC);
+  /*first set all the LEDs*/
+  this->set_day_sky(min_count);
+}
+
+/*From eve to night*/
+void light_control::trans_eve_night() {
+  strip.clear();
+  strip.setBrightness(255);
 
 
-    for (uint16_t b = 0 ; b < EVE_LED_BRIGHTNESS; b++)
-    {
-      for (uint16_t a = 0 ; a < strip.numPixels(); a++)
-      {
-        if ((a % 3) == 0) {
-          strip.setPixelColor(a, strip.Color(0, 0, NIGHT_LED_BRIGHTNESS));
-        } else {
-          strip.setPixelColor(a, strip.Color((NIGHT_LED_BRIGHTNESS - b), (NIGHT_LED_BRIGHTNESS - b), NIGHT_LED_BRIGHTNESS));
-        }
-      }
-
-      strip.show();
-      delay(50);
-    }
-
-  }
-
-
-  /*Transist from day to eve*/
-  void light_control::trans_day_eve() {
-
-
-    strip.clear();
-    strip.setBrightness(255);
-
-    for (uint16_t b = DAY_LED_BRIGHTNESS ; b < EVE_LED_BRIGHTNESS; b++)
-    {
-      //strip.setBrightness(b);
-
-      for (uint16_t a = 0 ; a < strip.numPixels(); a++)
-      {
-        if ((a % 3) == 0) {
-          strip.setPixelColor(a, strip.Color(0, 0, b));
-        } else {
-          strip.setPixelColor(a, strip.Color(b, b, b));
-        }
-      }
-      strip.show();
-      delay(50);
-    }
-  }
-
-
-  void light_control::trans_off_day()
+  for (uint16_t b = 0 ; b < EVE_LED_BRIGHTNESS; b++)
   {
-    //Serial.println("trans off -> day");
-    strip.clear();
-    strip.setBrightness(255);
-
-    for (uint16_t b = 0 ; b < DAY_LED_BRIGHTNESS; b++)
-    {
-      //strip.setBrightness(b);
-
-      for (uint16_t a = 0 ; a < strip.numPixels(); a++)
-      {
-        if ((a % 2) == 0) {
-          strip.setPixelColor(a, strip.Color(b, b, b));
-        } else {
-          strip.setPixelColor(a, strip.Color(0, 0, b));
-        }
-      }
-      strip.show();
-      delay(50);
-    }
-    //all done!
-  }
-
-
-  void light_control::set_day_sky(uint16_t sun_idx)
-  {
-    strip.clear();
-    strip.setBrightness(255);
-    for (uint16_t a = 0 ; a < strip.numPixels(); a++)
-    {
-      //Serial.print(sun_idx,DEC);
-      if (a != sun_idx)
-      {
-
-        if ((a % 2) == 0) {
-          strip.setPixelColor(a, strip.Color(DAY_LED_BRIGHTNESS, DAY_LED_BRIGHTNESS, DAY_LED_BRIGHTNESS));
-        } else {
-          strip.setPixelColor(a, strip.Color(0, 0, DAY_LED_BRIGHTNESS));
-        }
-
-      }
-      else
-      {
-        strip.setPixelColor(a, strip.Color(RGB_LED_INTENSITY, RGB_LED_INTENSITY, 50));
-      }
-    }
-    //this->apply_matrix();
-    //DAY_LED_BRIGHTNESS
-    //Serial.println("update strip");
-    //strip.setBrightness(DAY_LED_BRIGHTNESS);
-    strip.show();
-    //delay(500);
-  }
-
-  /*set eve mode*/
-  EVE_EFFECT prev_effect;
-  void light_control::set_eve_mode(bool trans)
-  {
-    if (trans) {
-      this->trans_day_eve();
-    }
-
-    strip.clear();
-    strip.setBrightness(255);
-
     for (uint16_t a = 0 ; a < strip.numPixels(); a++)
     {
       if ((a % 3) == 0) {
         strip.setPixelColor(a, strip.Color(0, 0, NIGHT_LED_BRIGHTNESS));
       } else {
-        strip.setPixelColor(a, strip.Color(NIGHT_LED_BRIGHTNESS, NIGHT_LED_BRIGHTNESS, NIGHT_LED_BRIGHTNESS));
+        strip.setPixelColor(a, strip.Color((NIGHT_LED_BRIGHTNESS - b), (NIGHT_LED_BRIGHTNESS - b), NIGHT_LED_BRIGHTNESS));
+      }
+    }
+
+    strip.show();
+    delay(50);
+  }
+
+}
+
+
+/*Transist from day to eve*/
+void light_control::trans_day_eve() {
+
+
+  strip.clear();
+  strip.setBrightness(255);
+
+  for (uint16_t b = DAY_LED_BRIGHTNESS ; b < EVE_LED_BRIGHTNESS; b++)
+  {
+    //strip.setBrightness(b);
+
+    for (uint16_t a = 0 ; a < strip.numPixels(); a++)
+    {
+      if ((a % 3) == 0) {
+        strip.setPixelColor(a, strip.Color(0, 0, b));
+      } else {
+        strip.setPixelColor(a, strip.Color(b, b, b));
       }
     }
     strip.show();
+    delay(50);
   }
+}
 
 
+void light_control::trans_off_day()
+{
+  //Serial.println("trans off -> day");
+  strip.clear();
+  strip.setBrightness(255);
 
-
-  /*set off mode*/
-  void light_control::set_off_mode(bool trans)
+  for (uint16_t b = 0 ; b < DAY_LED_BRIGHTNESS; b++)
   {
-    strip.clear();
+    //strip.setBrightness(b);
+
+    for (uint16_t a = 0 ; a < strip.numPixels(); a++)
+    {
+      if ((a % 2) == 0) {
+        strip.setPixelColor(a, strip.Color(b, b, b));
+      } else {
+        strip.setPixelColor(a, strip.Color(0, 0, b));
+      }
+    }
     strip.show();
+    delay(50);
   }
+  //all done!
+}
 
 
+void light_control::set_day_sky(uint16_t sun_idx)
+{
+  strip.clear();
+  strip.setBrightness(255);
+  for (uint16_t a = 0 ; a < strip.numPixels(); a++)
+  {
+    //Serial.print(sun_idx,DEC);
+    if (a != sun_idx)
+    {
 
-  // Fill the dots one after the other with a color
-  void light_control::colorWipe(uint32_t c, uint8_t wait) {
-    for (uint16_t i = 0; i < strip.numPixels(); i++) {
-      strip.setPixelColor(i, c);
-      strip.show();
-      delay(wait);
+      if ((a % 2) == 0) {
+        strip.setPixelColor(a, strip.Color(DAY_LED_BRIGHTNESS, DAY_LED_BRIGHTNESS, DAY_LED_BRIGHTNESS));
+      } else {
+        strip.setPixelColor(a, strip.Color(0, 0, DAY_LED_BRIGHTNESS));
+      }
+
+    }
+    else
+    {
+      strip.setPixelColor(a, strip.Color(RGB_LED_INTENSITY, RGB_LED_INTENSITY, 50));
     }
   }
+  strip.show();
 
-  // Slightly different, this makes the rainbow equally distributed throughout
-  void light_control::rainbowCycle(uint8_t wait) {
-    uint16_t i, j;
+}
 
-    for (j = 0; j < 256 * 2; j++) { // 5 cycles of all colors on wheel
-      for (i = 0; i < strip.numPixels(); i++) {
-        strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
+/*set eve mode*/
+EVE_EFFECT prev_effect;
+void light_control::set_eve_mode(bool trans)
+{
+  if (trans) {
+    this->trans_day_eve();
+  }
+
+  strip.clear();
+  strip.setBrightness(255);
+
+  for (uint16_t a = 0 ; a < strip.numPixels(); a++)
+  {
+    if ((a % 3) == 0) {
+      strip.setPixelColor(a, strip.Color(0, 0, NIGHT_LED_BRIGHTNESS));
+    } else {
+      strip.setPixelColor(a, strip.Color(NIGHT_LED_BRIGHTNESS, NIGHT_LED_BRIGHTNESS, NIGHT_LED_BRIGHTNESS));
+    }
+  }
+  strip.show();
+}
+
+
+
+
+/*set off mode*/
+void light_control::set_off_mode(bool trans)
+{
+  if (trans)
+  {
+    /*go from night to off*/
+    for (uint16_t b = NIGHT_LED_BRIGHTNESS ; b != 0; b--)
+    {
+      for (uint16_t a = 0 ; a < strip.numPixels(); a++)
+      {
+        if ((a % 5) == 0) {
+          if(b < NIGHT_WHITE_BRIGHTNESS){
+            strip.setPixelColor(a, strip.Color(b, b, b));
+          }else{
+            strip.setPixelColor(a, strip.Color(NIGHT_WHITE_BRIGHTNESS, NIGHT_WHITE_BRIGHTNESS, NIGHT_WHITE_BRIGHTNESS));
+          }
+        } else {
+          strip.setPixelColor(a, strip.Color(0, 0, b));
+        }
       }
       strip.show();
-      delay(wait);
+      delay(10);
     }
+
   }
 
 
-  // Input a value 0 to 255 to get a color value.
-  // The colours are a transition r - g - b - back to r.
-  uint32_t light_control::Wheel(byte WheelPos) {
-    WheelPos = 255 - WheelPos;
-    if (WheelPos < 85) {
-      return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-    }
-    if (WheelPos < 170) {
-      WheelPos -= 85;
-      return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-    }
-    WheelPos -= 170;
-    return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-  }
+  strip.clear();
+  strip.show();
+}
 
-  //Used to change the evening effect driven by the RTC
-  void light_control::effect_shift_timer()
-  {
-    eve_effect = random(0, 4);
-    /*
-      eve_effect++;
-      if (eve_effect > GREEN) eve_effect = STANDARD;
-    */
+
+
+// Fill the dots one after the other with a color
+void light_control::colorWipe(uint32_t c, uint8_t wait) {
+  for (uint16_t i = 0; i < strip.numPixels(); i++) {
+    strip.setPixelColor(i, c);
+    strip.show();
+    delay(wait);
   }
+}
+
+// Slightly different, this makes the rainbow equally distributed throughout
+void light_control::rainbowCycle(uint8_t wait) {
+  uint16_t i, j;
+
+  for (j = 0; j < 256 * 2; j++) { // 5 cycles of all colors on wheel
+    for (i = 0; i < strip.numPixels(); i++) {
+      strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
+    }
+    strip.show();
+    delay(wait);
+  }
+}
+
+
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t light_control::Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if (WheelPos < 85) {
+    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if (WheelPos < 170) {
+    WheelPos -= 85;
+    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+}
+
+//Used to change the evening effect driven by the RTC
+void light_control::effect_shift_timer()
+{
+  eve_effect = random(0, 4);
+  /*
+    eve_effect++;
+    if (eve_effect > GREEN) eve_effect = STANDARD;
+  */
+}
 

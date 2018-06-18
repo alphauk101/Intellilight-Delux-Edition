@@ -10,14 +10,15 @@
 
 #define DAY_LED_BRIGHTNESS      35  //This is the brightness level set to ALL leds when in day mode
 #define EVE_LED_BRIGHTNESS      210 //Evening brightness - I'm trying to avoid full power for heat/power reasons
-#define NIGHT_LED_BRIGHTNESS    200 //The night brightness
+#define NIGHT_LED_BRIGHTNESS    250 //The night brightness
+#define NIGHT_WHITE_BRIGHTNESS  60  // The red and green led intens during night 
 #define OFF_LED_BRIGHTNESS      0   //off mode 
 
 #define RGB_LED_INTENSITY       250 //Individual led intensity (not brightness) during none night modes
 #define MAX_LED_INTENSITY       250
 #define LOW_LED_INTENSITY       30
-#define NIGHT_BLUE_INTENSITY    250
-#define NIGHT_WHITE_INTENSITY   60  // The red and green led intens during night 
+
+
 
 /*Rose*/
 #define ROSE_RED                MAX_LED_INTENSITY
