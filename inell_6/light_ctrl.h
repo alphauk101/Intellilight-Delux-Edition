@@ -54,12 +54,10 @@ class light_control
     void set_off_mode(bool);
     void set_rgb_level(uint8_t , bool );
     void set_night_step(uint8_t);
-    void set_red_tint(void);
-    void set_effect(EVE_EFFECT, EVE_EFFECT);
-    bool update_pixel_transistion(LED_MATRIX new_c, uint16_t pix);
-    uint8_t compare_pix_ammend(uint8_t old_col, uint8_t new_col);
-    void apply_matrix(void);
     void set_day_sky(uint16_t);
+    void trans_off_day(void);
+    void trans_day_eve(void);
+    void trans_eve_night(void);
 };
 
 

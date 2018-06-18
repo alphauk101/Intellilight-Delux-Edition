@@ -9,7 +9,7 @@
 #define LONG_PRESS_COUNT    100 //how long we wait before considering a long press 100 = 5seconds (ish)
 
 #define DAY_LED_BRIGHTNESS      35  //This is the brightness level set to ALL leds when in day mode
-#define EVE_LED_BRIGHTNESS      180 //Evening brightness - I'm trying to avoid full power for heat/power reasons
+#define EVE_LED_BRIGHTNESS      210 //Evening brightness - I'm trying to avoid full power for heat/power reasons
 #define NIGHT_LED_BRIGHTNESS    200 //The night brightness
 #define OFF_LED_BRIGHTNESS      0   //off mode 
 
